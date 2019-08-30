@@ -121,8 +121,8 @@ final class SubscriberRegistry {
             }
             Class<?>[] parameterTypes = method.getParameterTypes();
             if (parameterTypes.length != 1) {
-                throw new IllegalArgumentException("Target method[" + listenerClazz.getName()
-                        + "] parameter need to be defined in 1, it has " + parameterTypes.length + " now.");
+                throw new IllegalArgumentException("Target method[" + listenerClazz.getName() + "#" + method.getName()
+                        + "] can only be defined in 1 parameter, but found " + parameterTypes.length + " now.");
             }
             Subscribe subscriber = method.getAnnotation(Subscribe.class);
             String subscriberName = "".equals(subscriber.name().trim()) ? listenerClazz.getName() + "#" + method.getName() : subscriber.name();
