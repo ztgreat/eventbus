@@ -1,7 +1,7 @@
 package com.ztgreat.eventbus.base;
 
 /**
- * <p> </p>
+ * <p> the common check for other method </p>
  *
  * @author chenglu
  * @date 2019/8/29

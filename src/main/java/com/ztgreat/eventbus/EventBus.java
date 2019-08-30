@@ -206,6 +206,9 @@ public class EventBus {
    */
   public void post(Object event) {
     Iterator<Subscriber> eventSubscribers = subscribers.getSubscribers(event);
+    if (eventSubscribers == null) {
+      return;
+    }
     if (eventSubscribers.hasNext()) {
       dispatcher.dispatch(event, eventSubscribers);
     } else if (!(event instanceof DeadEvent)) {

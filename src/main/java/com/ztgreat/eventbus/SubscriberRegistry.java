@@ -19,7 +19,6 @@ import com.ztgreat.eventbus.annotation.Subscribe;
 import com.ztgreat.eventbus.base.Collections;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -113,7 +111,9 @@ final class SubscriberRegistry {
   Iterator<Subscriber> getSubscribers(Object event) {
 
     CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(event.getClass());
-
+    if (eventSubscribers == null) {
+        return null;
+    }
     return eventSubscribers.iterator();
   }
 

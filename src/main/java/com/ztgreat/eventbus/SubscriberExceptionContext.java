@@ -20,7 +20,7 @@ import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
 
 /**
  * Context for an exception thrown by a subscriber.
- *
+ * @author google-guava
  * @since 16.0
  */
 public class SubscriberExceptionContext {
