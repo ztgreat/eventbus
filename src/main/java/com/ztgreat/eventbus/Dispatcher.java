@@ -19,6 +19,7 @@ import com.ztgreat.eventbus.base.Collections;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Logger;
 
 import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
 
@@ -34,7 +35,7 @@ import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
  * @author Colin Decker
  */
 abstract class Dispatcher {
-
+  private static final Logger LOGGER = Logger.getLogger(Dispatcher.class.getName());
   /**
    * Returns a dispatcher that queues events that are posted reentrantly on a thread that is already
    * dispatching an event, guaranteeing that all events posted on a single thread are dispatched to
@@ -78,21 +79,11 @@ abstract class Dispatcher {
 
     /** Per-thread queue of events to dispatch. */
     private final ThreadLocal<Queue<Event>> queue =
-        new ThreadLocal<Queue<Event>>() {
-          @Override
-          protected Queue<Event> initialValue() {
-            return Collections.newArrayDeque();
-          }
-        };
+            ThreadLocal.withInitial(Collections::newArrayDeque);
 
     /** Per-thread dispatch state, used to avoid reentrant event dispatching. */
     private final ThreadLocal<Boolean> dispatching =
-        new ThreadLocal<Boolean>() {
-          @Override
-          protected Boolean initialValue() {
-            return false;
-          }
-        };
+            ThreadLocal.withInitial(() -> false);
 
     @Override
     void dispatch(Object event, Iterator<Subscriber> subscribers) {
@@ -103,17 +94,22 @@ abstract class Dispatcher {
 
       if (!dispatching.get()) {
         dispatching.set(true);
+        String chainInfo = "[EventBus Running] ";
         try {
           Event nextEvent;
           while ((nextEvent = queueForThread.poll()) != null) {
             while (nextEvent.subscribers.hasNext()) {
-              nextEvent.subscribers.next().dispatchEvent(nextEvent.event);
+              Subscriber subscriber = nextEvent.subscribers.next();
+              subscriber.dispatchEvent(nextEvent.event);
+              String subscriberName = "->[" + subscriber.getSubscribeMethod().getName() + "]";
+              chainInfo += subscriberName;
             }
           }
         } finally {
           dispatching.remove();
           queue.remove();
         }
+        LOGGER.info(chainInfo.replaceFirst("->", " "));
       }
     }
 
@@ -161,9 +157,14 @@ abstract class Dispatcher {
       }
 
       EventWithSubscriber e;
+      String chainInfo = "[EventBus Running] ";
       while ((e = queue.poll()) != null) {
-        e.subscriber.dispatchEvent(e.event);
+        Subscriber subscriber = e.subscriber;
+        subscriber.dispatchEvent(e.event);
+        String subscriberName = "->[" + subscriber.getSubscribeMethod().getName() + "]";
+        chainInfo += subscriberName;
       }
+      LOGGER.info(chainInfo.replaceFirst("->", " "));
     }
 
     private static final class EventWithSubscriber {
@@ -180,13 +181,17 @@ abstract class Dispatcher {
   /** Implementation of {@link #immediate()}. */
   private static final class ImmediateDispatcher extends Dispatcher {
     private static final ImmediateDispatcher INSTANCE = new ImmediateDispatcher();
-
     @Override
     void dispatch(Object event, Iterator<Subscriber> subscribers) {
       checkNotNull(event);
+      String chainInfo = "[EventBus Running] ";
       while (subscribers.hasNext()) {
-        subscribers.next().dispatchEvent(event);
+        Subscriber subscriber = subscribers.next();
+        subscriber.dispatchEvent(event);
+        String subscriberName = "->[" + subscriber.getSubscribeMethod().getName() + "]";
+        chainInfo += subscriberName;
       }
+      LOGGER.info(chainInfo.replaceFirst("->"," "));
     }
   }
 }

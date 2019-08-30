@@ -19,15 +19,14 @@ import com.ztgreat.eventbus.annotation.Subscribe;
 import com.ztgreat.eventbus.base.Collections;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
 
 import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
 
@@ -38,190 +37,169 @@ import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
  * @author Colin Decker
  */
 final class SubscriberRegistry {
+    /**
+     * log print utils
+     */
+    private static final Logger LOGGER = Logger.getLogger(SubscriberRegistry.class.getName());
 
-  /**
-   * All registered subscribers, indexed by event type.
-   *
-   * <p>The {@link java.util.concurrent.CopyOnWriteArraySet} values make it easy and relatively lightweight to get an
-   * immutable snapshot of all current subscribers to an event without any locking.
-   */
-  private final ConcurrentMap<Class<?>, CopyOnWriteArraySet<Subscriber>> subscribers =
-      Collections.newConcurrentMap();
+    /**
+     * All registered subscribers, indexed by event type.
+     *
+     * <p>The {@link java.util.List List} values make it easy and relatively lightweight to get an
+     * immutable snapshot of all current subscribers to an event without any locking.
+     */
+    private final ConcurrentMap<Class<?>, List<Subscriber>> subscribersInSameEventType = Collections.newConcurrentMap();
+    /**
+     * record the register listeners in EventBus, the value is the listener's subscribe methods
+     */
+    private final ConcurrentMap<Object, List<Subscriber>> subscribersInSameListener = Collections.newConcurrentMap();
 
-  /** The event bus this registry belongs to. */
-  private final EventBus bus;
+    private final ConcurrentMap<Class, List<SubscribeMethod>> classSubscribeMethods = Collections.newConcurrentMap();
 
-  SubscriberRegistry(EventBus bus) {
-    this.bus = checkNotNull(bus);
-  }
+    /** The event bus this registry belongs to. */
+    private final EventBus bus;
 
-  /** Registers all subscriber methods on the given listener object. */
-  void register(Object listener) {
-    Map<Class<?>, Collection<Subscriber>> listenerMethods = findAllSubscribers(listener);
-
-    for (Entry<Class<?>, Collection<Subscriber>> entry : listenerMethods.entrySet()) {
-      Class<?> eventType = entry.getKey();
-      Collection<Subscriber> eventMethodsInListener = entry.getValue();
-
-      CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(eventType);
-
-      if (eventSubscribers == null) {
-        CopyOnWriteArraySet<Subscriber> newSet = new CopyOnWriteArraySet<>();
-        newSet.addAll(eventMethodsInListener);
-        subscribers.putIfAbsent(eventType, newSet);
-      } else {
-          eventSubscribers.addAll(eventMethodsInListener);
-      }
-
-//      eventSubscribers.addAll(eventMethodsInListener);
+    SubscriberRegistry(EventBus bus) {
+        this.bus = checkNotNull(bus);
     }
-  }
 
-  /** Unregisters all subscribers on the given listener object. */
-  void unregister(Object listener) {
-    Map<Class<?>, Collection<Subscriber>> listenerMethods = findAllSubscribers(listener);
-
-    for (Entry<Class<?>, Collection<Subscriber>> entry : listenerMethods.entrySet()) {
-      Class<?> eventType = entry.getKey();
-      Collection<Subscriber> listenerMethodsForType = entry.getValue();
-
-      CopyOnWriteArraySet<Subscriber> currentSubscribers = subscribers.get(eventType);
-      if (currentSubscribers == null || !currentSubscribers.removeAll(listenerMethodsForType)) {
-        // if removeAll returns true, all we really know is that at least one subscriber was
-        // removed... however, barring something very strange we can assume that if at least one
-        // subscriber was removed, all subscribers on listener for that event type were... after
-        // all, the definition of subscribers on a particular class is totally static
-        throw new IllegalArgumentException(
-            "missing event subscriber for an annotated method. Is " + listener + " registered?");
-      }
-
-      // don't try to remove the set if it's empty; that can't be done safely without a lock
-      // anyway, if the set is empty it'll just be wrapping an array of length 0
-    }
-  }
-//
-//  Set<Subscriber> getSubscribersForTesting(Class<?> eventType) {
-//    return MoreObjects.firstNonNull(subscribers.get(eventType), ImmutableSet.<Subscriber>of());
-//  }
-
-  /**
-   * Gets an iterator representing an immutable snapshot of all subscribers to the given event at
-   * the time this method is called.
-   */
-  Iterator<Subscriber> getSubscribers(Object event) {
-
-    CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(event.getClass());
-    if (eventSubscribers == null) {
-        return null;
-    }
-    return eventSubscribers.iterator();
-  }
-
-  /**
-   * A thread-safe cache that contains the mapping from each class to all methods in that class and
-   * all super-classes, that are annotated with {@code @Subscribe}. The cache is shared across all
-   * instances of this class; this greatly improves performance if multiple EventBus instances are
-   * created and objects of the same class are registered on all of them.
-   */
-//  private static final LoadingCache<Class<?>, ImmutableList<Method>> subscriberMethodsCache =
-//      CacheBuilder.newBuilder()
-//          .weakKeys()
-//          .build(
-//              new CacheLoader<Class<?>, ImmutableList<Method>>() {
-//                @Override
-//                public ImmutableList<Method> load(Class<?> concreteClass) throws Exception {
-//                  return getAnnotatedMethodsNotCached(concreteClass);
-//                }
-//              });
-
-  /**
-   * Returns all subscribers for the given listener grouped by the type of event they subscribe to.
-   */
-  private Map<Class<?>, Collection<Subscriber>> findAllSubscribers(Object listener) {
-    Map<Class<?>, Collection<Subscriber>> methodsInListener = new HashMap<>(64);
-    Class<?> clazz = listener.getClass();
-    for (Method method : getAnnotatedMethodsNotCached(clazz)) {
-      Class<?>[] parameterTypes = method.getParameterTypes();
-      Class<?> eventType = parameterTypes[0];
-      Collection<Subscriber> subscribers = methodsInListener.get(eventType);
-      if (subscribers == null || subscribers.size() == 0) {
-        subscribers = Collections.newArrayList();
-        methodsInListener.put(eventType, subscribers);
-      }
-      subscribers.add(Subscriber.create(bus, listener, method));
-    }
-    return methodsInListener;
-  }
-
-//  private static ImmutableList<Method> getAnnotatedMethods(Class<?> clazz) {
-//    return subscriberMethodsCache.getUnchecked(clazz);
-//  }
-
-  private static Collection<Method> getAnnotatedMethodsNotCached(Class<?> clazz) {
-    Map<MethodIdentifier, Method> identifiers = Collections.newHashMap();
-    for (Method method : clazz.getMethods()) {
-      if (method.isAnnotationPresent(Subscribe.class) && !method.isSynthetic()) {
-        // TODO(cgdecker): Should check for a generic parameter type and error out
-        Class<?>[] parameterTypes = method.getParameterTypes();
-        // check the count of parameters
-        MethodIdentifier ident = new MethodIdentifier(method);
-        if (!identifiers.containsKey(ident)) {
-          identifiers.put(ident, method);
+    /** Registers all subscriber methods on the given listener object. */
+    synchronized void register(Object listener) {
+        Class clazz = listener.getClass();
+        if (subscribersInSameListener.get(listener) != null) {
+            LOGGER.info("Listener[" + clazz.getName() + ": " + listener + "] has been register in EventBus, ignore this register.");
+            return;
         }
-      }
-    }
-    return identifiers.values();
-  }
-
-  /** Global cache of classes to their flattened hierarchy of supertypes. */
-//  private static final LoadingCache<Class<?>, ImmutableSet<Class<?>>> flattenHierarchyCache =
-//      CacheBuilder.newBuilder()
-//          .weakKeys()
-//          .build(
-//              new CacheLoader<Class<?>, ImmutableSet<Class<?>>>() {
-//                // <Class<?>> is actually needed to compile
-//                @SuppressWarnings("RedundantTypeArguments")
-//                @Override
-//                public ImmutableSet<Class<?>> load(Class<?> concreteClass) {
-//                  return ImmutableSet.<Class<?>>copyOf(
-//                      TypeToken.of(concreteClass).getTypes().rawTypes());
-//                }
-//              });
-
-  /**
-   * Flattens a class's type hierarchy into a set of {@code Class} objects including all
-   * superclasses (transitively) and all interfaces implemented by these superclasses.
-   */
-//  static ImmutableSet<Class<?>> flattenHierarchy(Class<?> concreteClass) {
-//    try {
-//      return flattenHierarchyCache.getUnchecked(concreteClass);
-//    } catch (UncheckedExecutionException e) {
-//      throw Throwables.propagate(e.getCause());
-//    }
-//  }
-
-  private static final class MethodIdentifier {
-
-    private final String name;
-    private final List<Class<?>> parameterTypes;
-
-    MethodIdentifier(Method method) {
-      this.name = method.getName();
-      this.parameterTypes = Arrays.asList(method.getParameterTypes());
+        // get the subscribe methods in the listener
+        List<SubscribeMethod> subscribeMethods = findSubscriberMethods(clazz);
+        if (subscribeMethods == null) {
+            LOGGER.info("Listener[" + clazz.getName() + ": " + listener + "] has no subscribed methods, ignore this register.");
+            return;
+        }
+        // create new Subscriber and register into subscribersInSameEventType
+        doRegister(listener, subscribeMethods);
     }
 
-    @Override
-    public int hashCode() {
-      return Arrays.hashCode(new Object[]{name, parameterTypes});
+    /**
+     * create the Subscriber and register in subscribersInSameEventType
+     * @param listener listener
+     * @param subscribeMethods the subscribe methods in the listener
+     */
+    private void doRegister(Object listener, List<SubscribeMethod> subscribeMethods) {
+        List<Subscriber> listenerSubscribers = Collections.newArrayList();
+        for (SubscribeMethod subscribeMethod : subscribeMethods) {
+            Class eventType = subscribeMethod.getEventType();
+            List<Subscriber> subscribers = subscribersInSameEventType.computeIfAbsent(eventType, k -> Collections.newArrayList());
+            Subscriber subscriber = Subscriber.create(bus, listener, subscribeMethod);
+            if (subscribers.contains(subscriber)) {
+                continue;
+            }
+            subscribers.add(subscriber);
+            subscribers.sort((s1, s2) -> s2.getSubscribeMethod().getPriority() - s1.getSubscribeMethod().getPriority());
+            listenerSubscribers.add(subscriber);
+        }
+        if (listenerSubscribers.size() == 0) {
+            return;
+        }
+        subscribersInSameListener.put(listener, listenerSubscribers);
     }
 
-    @Override
-    public boolean equals(@Nullable Object o) {
-      if (o instanceof MethodIdentifier) {
-        MethodIdentifier ident = (MethodIdentifier) o;
-        return name.equals(ident.name) && parameterTypes.equals(ident.parameterTypes);
-      }
-      return false;
+    /**
+     * get the class of the listener
+     * @param listenerClazz listener class
+     * @return the method subscribe in the listener
+     */
+    private List<SubscribeMethod> findSubscriberMethods(Class listenerClazz) {
+        List<SubscribeMethod> subscribeMethods = classSubscribeMethods.get(listenerClazz);
+        if (subscribeMethods != null) {
+            return subscribeMethods;
+        }
+        Map<MethodIdentifier, SubscribeMethod> identifiers = Collections.newHashMap();
+        for (Method method : listenerClazz.getMethods()) {
+            if (!method.isAnnotationPresent(Subscribe.class) || method.isSynthetic()) {
+                continue;
+            }
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if (parameterTypes.length != 1) {
+                throw new IllegalArgumentException("Target method[" + listenerClazz.getName()
+                        + "] parameter need to be defined in 1, it has " + parameterTypes.length + " now.");
+            }
+            Subscribe subscriber = method.getAnnotation(Subscribe.class);
+            String subscriberName = "".equals(subscriber.name().trim()) ? listenerClazz.getName() + "#" + method.getName() : subscriber.name();
+            SubscribeMethod subscribeMethod = SubscribeMethod.Builder.aSubscribeMethod()
+                    .withMethod(method)
+                    .withEventType(parameterTypes[0])
+                    .withName(subscriberName)
+                    .withPriority(subscriber.priority())
+                    .build();
+            // check the count of parameters
+            MethodIdentifier ident = new MethodIdentifier(method);
+            if (!identifiers.containsKey(ident)) {
+                identifiers.put(ident, subscribeMethod);
+            }
+        }
+        subscribeMethods = new ArrayList<>(identifiers.values());
+        if (subscribeMethods.size() == 0) {
+            return null;
+        }
+        classSubscribeMethods.put(listenerClazz, subscribeMethods);
+        return subscribeMethods;
     }
-  }
+
+    /** Unregisters all subscribers on the given listener object. */
+    void unregister(Object listener) {
+        List<Subscriber> listenerMethods = subscribersInSameListener.get(listener);
+        if (listenerMethods == null) {
+            return;
+        }
+        for (Subscriber subscriber : listenerMethods) {
+            List<Subscriber> currentSubscribers = subscribersInSameEventType.get(subscriber.getSubscribeMethod().getEventType());
+            if (currentSubscribers == null || !currentSubscribers.remove(subscriber)) {
+                // if remove returns true, all we really know is that at least one subscriber was
+                // removed... however, barring something very strange we can assume that if at least one
+                // subscriber was removed, all subscribers on listener for that event type were... after
+                // all, the definition of subscribers on a particular class is totally static
+                throw new IllegalArgumentException(
+                        "missing event subscriber for an annotated method. Is " + listener + " registered?");
+            }
+        }
+    }
+
+    /**
+     * Gets an iterator representing an immutable snapshot of all subscribers to the given event at
+     * the time this method is called.
+     */
+    Iterator<Subscriber> getSubscribers(Object event) {
+
+        List<Subscriber> eventSubscribers = subscribersInSameEventType.get(event.getClass());
+        if (eventSubscribers == null) {
+            return null;
+        }
+        return eventSubscribers.iterator();
+    }
+
+    private static final class MethodIdentifier {
+
+        private final String name;
+        private final List<Class<?>> parameterTypes;
+
+        MethodIdentifier(Method method) {
+            this.name = method.getName();
+            this.parameterTypes = Arrays.asList(method.getParameterTypes());
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(new Object[]{name, parameterTypes});
+        }
+
+        @Override
+        public boolean equals(@Nullable Object o) {
+            if (o instanceof MethodIdentifier) {
+                MethodIdentifier ident = (MethodIdentifier) o;
+                return name.equals(ident.name) && parameterTypes.equals(ident.parameterTypes);
+            }
+            return false;
+        }
+    }
 }

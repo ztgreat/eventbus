@@ -2,11 +2,12 @@ package com.ztgreat.eventbus.base;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * <p> the extend of {@link java.util.Collections} </p>
@@ -33,7 +34,11 @@ public final class Collections {
         return new HashMap<>(16);
     }
 
-    public static <E> Collection<E> newArrayList() {
+    public static <E> List<E> newArrayList() {
         return new ArrayList<>();
+    }
+
+    public static <E> CopyOnWriteArrayList<E> newCopyOnWriteArrayList() {
+        return new CopyOnWriteArrayList<>();
     }
 }

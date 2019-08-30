@@ -14,6 +14,8 @@
 
 package com.ztgreat.eventbus.annotation;
 
+import com.ztgreat.eventbus.constant.Priority;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,4 +36,10 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Subscribe {}
+public @interface Subscribe {
+    /** the priority in the subscriber method **/
+    int priority() default Priority.M_LEVEL;
+
+    /** the description name for the subscriber method **/
+    String name() default "";
+}

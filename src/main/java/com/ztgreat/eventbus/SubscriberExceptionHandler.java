@@ -16,7 +16,7 @@ package com.ztgreat.eventbus;
 
 /**
  * Handler for exceptions thrown by event subscribers.
- *
+ * @author google-guava
  * @since 16.0
  */
 public interface SubscriberExceptionHandler {

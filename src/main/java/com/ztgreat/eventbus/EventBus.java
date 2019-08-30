@@ -117,7 +117,7 @@ public class EventBus {
     this(
         identifier,
         MoreExecutors.directExecutor(),
-        Dispatcher.perThreadDispatchQueue(),
+        Dispatcher.immediate(),
         LoggingHandler.INSTANCE);
   }
 
