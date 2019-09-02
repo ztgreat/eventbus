@@ -125,11 +125,9 @@ final class SubscriberRegistry {
                         + "] can only be defined in 1 parameter, but found " + parameterTypes.length + " now.");
             }
             Subscribe subscriber = method.getAnnotation(Subscribe.class);
-            String subscriberName = "".equals(subscriber.name().trim()) ? listenerClazz.getName() + "#" + method.getName() : subscriber.name();
             SubscribeMethod subscribeMethod = SubscribeMethod.Builder.aSubscribeMethod()
                     .withMethod(method)
                     .withEventType(parameterTypes[0])
-                    .withName(subscriberName)
                     .withPriority(subscriber.priority())
                     .build();
             // the unique checkout of the method

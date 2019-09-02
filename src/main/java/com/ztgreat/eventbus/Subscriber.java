@@ -93,7 +93,7 @@ class Subscriber {
 
     /** Gets the context for the given event. */
     private SubscriberExceptionContext context(Object event) {
-        return new SubscriberExceptionContext(bus, event, target, subscribeMethod.getMethod());
+        return new SubscriberExceptionContext(bus, event, target, subscribeMethod);
     }
 
     @Override

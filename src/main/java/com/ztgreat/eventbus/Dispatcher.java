@@ -94,22 +94,17 @@ abstract class Dispatcher {
 
       if (!dispatching.get()) {
         dispatching.set(true);
-        String chainInfo = "[EventBus Running] ";
         try {
           Event nextEvent;
           while ((nextEvent = queueForThread.poll()) != null) {
             while (nextEvent.subscribers.hasNext()) {
-              Subscriber subscriber = nextEvent.subscribers.next();
-              subscriber.dispatchEvent(nextEvent.event);
-              String subscriberName = "->[" + subscriber.getSubscribeMethod().getName() + "]";
-              chainInfo += subscriberName;
+              nextEvent.subscribers.next().dispatchEvent(nextEvent.event);
             }
           }
         } finally {
           dispatching.remove();
           queue.remove();
         }
-        LOGGER.info(chainInfo.replaceFirst("->", " "));
       }
     }
 
@@ -157,14 +152,9 @@ abstract class Dispatcher {
       }
 
       EventWithSubscriber e;
-      String chainInfo = "[EventBus Running] ";
       while ((e = queue.poll()) != null) {
-        Subscriber subscriber = e.subscriber;
-        subscriber.dispatchEvent(e.event);
-        String subscriberName = "->[" + subscriber.getSubscribeMethod().getName() + "]";
-        chainInfo += subscriberName;
+        e.subscriber.dispatchEvent(e.event);
       }
-      LOGGER.info(chainInfo.replaceFirst("->", " "));
     }
 
     private static final class EventWithSubscriber {
@@ -184,14 +174,9 @@ abstract class Dispatcher {
     @Override
     void dispatch(Object event, Iterator<Subscriber> subscribers) {
       checkNotNull(event);
-      String chainInfo = "[EventBus Running] ";
       while (subscribers.hasNext()) {
-        Subscriber subscriber = subscribers.next();
-        subscriber.dispatchEvent(event);
-        String subscriberName = "->[" + subscriber.getSubscribeMethod().getName() + "]";
-        chainInfo += subscriberName;
+        subscribers.next().dispatchEvent(event);
       }
-      LOGGER.info(chainInfo.replaceFirst("->"," "));
     }
   }
 }

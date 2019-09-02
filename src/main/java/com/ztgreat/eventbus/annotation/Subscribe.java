@@ -37,9 +37,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Subscribe {
-    /** the priority in the subscriber method **/
+    /** the priority in the subscriber method, only used into sync EventBus post **/
     int priority() default Priority.M_LEVEL;
-
-    /** the description name for the subscriber method **/
-    String name() default "";
 }

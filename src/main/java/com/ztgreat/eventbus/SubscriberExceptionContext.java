@@ -14,8 +14,6 @@
 
 package com.ztgreat.eventbus;
 
-import java.lang.reflect.Method;
-
 import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
 
 /**
@@ -27,21 +25,21 @@ public class SubscriberExceptionContext {
   private final EventBus eventBus;
   private final Object event;
   private final Object subscriber;
-  private final Method subscriberMethod;
+  private final SubscribeMethod subscribeMethod;
 
   /**
    * @param eventBus The {@link EventBus} that handled the event and the subscriber. Useful for
    *     broadcasting a a new event based on the error.
    * @param event The event object that caused the subscriber to throw.
    * @param subscriber The source subscriber context.
-   * @param subscriberMethod the subscribed method.
+   * @param subscribeMethod the subscribed method, and extend information.
    */
   SubscriberExceptionContext(
-      EventBus eventBus, Object event, Object subscriber, Method subscriberMethod) {
+      EventBus eventBus, Object event, Object subscriber, SubscribeMethod subscribeMethod) {
     this.eventBus = checkNotNull(eventBus);
     this.event = checkNotNull(event);
     this.subscriber = checkNotNull(subscriber);
-    this.subscriberMethod = checkNotNull(subscriberMethod);
+    this.subscribeMethod = checkNotNull(subscribeMethod);
   }
 
   /**
@@ -63,7 +61,7 @@ public class SubscriberExceptionContext {
   }
 
   /** @return The subscribed method that threw the exception. */
-  public Method getSubscriberMethod() {
-    return subscriberMethod;
+  public SubscribeMethod getSubscribeMethod() {
+    return subscribeMethod;
   }
 }
