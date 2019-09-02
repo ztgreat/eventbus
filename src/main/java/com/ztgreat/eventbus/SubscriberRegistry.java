@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
@@ -119,6 +118,7 @@ final class SubscriberRegistry {
             if (!method.isAnnotationPresent(Subscribe.class) || method.isSynthetic()) {
                 continue;
             }
+            // check the count of parameters
             Class<?>[] parameterTypes = method.getParameterTypes();
             if (parameterTypes.length != 1) {
                 throw new IllegalArgumentException("Target method[" + listenerClazz.getName() + "#" + method.getName()
@@ -132,7 +132,7 @@ final class SubscriberRegistry {
                     .withName(subscriberName)
                     .withPriority(subscriber.priority())
                     .build();
-            // check the count of parameters
+            // the unique checkout of the method
             MethodIdentifier ident = new MethodIdentifier(method);
             if (!identifiers.containsKey(ident)) {
                 identifiers.put(ident, subscribeMethod);

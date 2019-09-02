@@ -34,132 +34,128 @@ import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
  */
 class Subscriber {
 
-  /** Creates a {@code Subscriber} for {@code method} on event {@code class} of the {@code listener}. */
-  static Subscriber create(EventBus bus, Object listener, SubscribeMethod subscribeMethod) {
-    return isDeclaredThreadSafe(subscribeMethod.getMethod())
-        ? new Subscriber(bus, listener, subscribeMethod)
-        : new SynchronizedSubscriber(bus, listener, subscribeMethod);
-  }
+    /** Creates a {@code Subscriber} for {@code method} on event {@code class} of the {@code listener}. */
+    static Subscriber create(EventBus bus, Object listener, SubscribeMethod subscribeMethod) {
+        return isDeclaredThreadSafe(subscribeMethod.getMethod())
+                ? new Subscriber(bus, listener, subscribeMethod)
+                : new SynchronizedSubscriber(bus, listener, subscribeMethod);
+    }
 
-  /** The event bus this subscriber belongs to. */
-  private EventBus bus;
+    /** The event bus this subscriber belongs to. */
+    private EventBus bus;
 
-  /** The object with the subscriber method. */
-  final Object target;
+    /** The object with the subscriber method. */
+    final Object target;
 
-  /** Subscriber method. */
-  private final SubscribeMethod subscribeMethod;
+    /** Subscriber method. */
+    private final SubscribeMethod subscribeMethod;
 
-  /** Executor to use for dispatching events to this subscriber. */
-  private final Executor executor;
+    /** Executor to use for dispatching events to this subscriber. */
+    private final Executor executor;
 
-  private Subscriber(EventBus bus, Object target, SubscribeMethod subscribeMethod) {
-    this.bus = bus;
-    this.target = checkNotNull(target);
-    this.subscribeMethod = subscribeMethod;
-    subscribeMethod.getMethod().setAccessible(true);
-    this.executor = bus.executor();
-  }
+    private Subscriber(EventBus bus, Object target, SubscribeMethod subscribeMethod) {
+        this.bus = bus;
+        this.target = checkNotNull(target);
+        this.subscribeMethod = subscribeMethod;
+        subscribeMethod.getMethod().setAccessible(true);
+        this.executor = bus.executor();
+    }
 
-  /** Dispatches {@code event} to this subscriber using the proper executor. */
-  final void dispatchEvent(final Object event) {
-    executor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
+    /** Dispatches {@code event} to this subscriber using the proper executor. */
+    final void dispatchEvent(final Object event) {
+        executor.execute(() -> {
             try {
-              invokeSubscriberMethod(event);
+                invokeSubscriberMethod(event);
             } catch (InvocationTargetException e) {
-              bus.handleSubscriberException(e.getCause(), context(event));
+                bus.handleSubscriberException(e.getCause(), context(event));
             }
-          }
         });
-  }
-
-  /**
-   * Invokes the subscriber method. This method can be overridden to make the invocation
-   * synchronized.
-   */
-  void invokeSubscriberMethod(Object event) throws InvocationTargetException {
-    try {
-      subscribeMethod.getMethod().invoke(target, checkNotNull(event));
-    } catch (IllegalArgumentException e) {
-      throw new Error("Method rejected target/argument: " + event, e);
-    } catch (IllegalAccessException e) {
-      throw new Error("Method became inaccessible: " + event, e);
-    } catch (InvocationTargetException e) {
-      if (e.getCause() instanceof Error) {
-        throw (Error) e.getCause();
-      }
-      throw e;
     }
-  }
 
-  /** Gets the context for the given event. */
-  private SubscriberExceptionContext context(Object event) {
-    return new SubscriberExceptionContext(bus, event, target, subscribeMethod.getMethod());
-  }
-
-  @Override
-  public final int hashCode() {
-    return (31 + subscribeMethod.getMethod().hashCode()) * 31 + System.identityHashCode(target);
-  }
-
-  @Override
-  public final boolean equals(@Nullable Object obj) {
-    if (obj instanceof Subscriber) {
-      Subscriber that = (Subscriber) obj;
-      // Use == so that different equal instances will still receive events.
-      // We only guard against the case that the same object is registered
-      // multiple times
-      return target == that.target && subscribeMethod.getMethod().equals(that.subscribeMethod.getMethod());
+    /**
+     * Invokes the subscriber method. This method can be overridden to make the invocation
+     * synchronized.
+     */
+    void invokeSubscriberMethod(Object event) throws InvocationTargetException {
+        try {
+            subscribeMethod.getMethod().invoke(target, checkNotNull(event));
+        } catch (IllegalArgumentException e) {
+            throw new Error("Method rejected target/argument: " + event, e);
+        } catch (IllegalAccessException e) {
+            throw new Error("Method became inaccessible: " + event, e);
+        } catch (InvocationTargetException e) {
+            if (e.getCause() instanceof Error) {
+                throw (Error) e.getCause();
+            }
+            throw e;
+        }
     }
-    return false;
-  }
 
-  /**
-   * Checks whether {@code method} is thread-safe, as indicated by the presence of the {@link
-   * com.ztgreat.eventbus.annotation.AllowConcurrentEvents} annotation.
-   */
-  private static boolean isDeclaredThreadSafe(Method method) {
-    return method.getAnnotation(AllowConcurrentEvents.class) != null;
-  }
-
-  /**
-   * Subscriber that synchronizes invocations of a method to ensure that only one thread may enter
-   * the method at a time.
-   */
-  static final class SynchronizedSubscriber extends Subscriber {
-
-    private SynchronizedSubscriber(EventBus bus, Object target, SubscribeMethod subscribeMethod) {
-      super(bus, target, subscribeMethod);
+    /** Gets the context for the given event. */
+    private SubscriberExceptionContext context(Object event) {
+        return new SubscriberExceptionContext(bus, event, target, subscribeMethod.getMethod());
     }
 
     @Override
-    void invokeSubscriberMethod(Object event) throws InvocationTargetException {
-      synchronized (this) {
-        super.invokeSubscriberMethod(event);
-      }
+    public final int hashCode() {
+        return (31 + subscribeMethod.getMethod().hashCode()) * 31 + System.identityHashCode(target);
     }
-  }
 
-  public EventBus getBus() {
-    return bus;
-  }
+    @Override
+    public final boolean equals(@Nullable Object obj) {
+        if (obj instanceof Subscriber) {
+            Subscriber that = (Subscriber) obj;
+            // Use == so that different equal instances will still receive events.
+            // We only guard against the case that the same object is registered
+            // multiple times
+            return target == that.target && subscribeMethod.getMethod().equals(that.subscribeMethod.getMethod());
+        }
+        return false;
+    }
 
-  public void setBus(EventBus bus) {
-    this.bus = bus;
-  }
+    /**
+     * Checks whether {@code method} is thread-safe, as indicated by the presence of the {@link
+     * com.ztgreat.eventbus.annotation.AllowConcurrentEvents} annotation.
+     */
+    private static boolean isDeclaredThreadSafe(Method method) {
+        return method.getAnnotation(AllowConcurrentEvents.class) != null;
+    }
 
-  public Object getTarget() {
-    return target;
-  }
+    /**
+     * Subscriber that synchronizes invocations of a method to ensure that only one thread may enter
+     * the method at a time.
+     */
+    static final class SynchronizedSubscriber extends Subscriber {
 
-  public SubscribeMethod getSubscribeMethod() {
-    return subscribeMethod;
-  }
+        private SynchronizedSubscriber(EventBus bus, Object target, SubscribeMethod subscribeMethod) {
+            super(bus, target, subscribeMethod);
+        }
 
-  public Executor getExecutor() {
-    return executor;
-  }
+        @Override
+        void invokeSubscriberMethod(Object event) throws InvocationTargetException {
+            synchronized (this) {
+                super.invokeSubscriberMethod(event);
+            }
+        }
+    }
+
+    public EventBus getBus() {
+        return bus;
+    }
+
+    public void setBus(EventBus bus) {
+        this.bus = bus;
+    }
+
+    public Object getTarget() {
+        return target;
+    }
+
+    public SubscribeMethod getSubscribeMethod() {
+        return subscribeMethod;
+    }
+
+    public Executor getExecutor() {
+        return executor;
+    }
 }
