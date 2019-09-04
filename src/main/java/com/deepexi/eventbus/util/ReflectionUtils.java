@@ -1,4 +1,4 @@
-package com.ztgreat.eventbus.util;
+package com.deepexi.eventbus.util;
 
 /*
  * Copyright 2013-2014 the original author or authors.
@@ -504,8 +504,8 @@ public abstract class ReflectionUtils {
         CollectionUtil.addAll(result, getAnnotations(methods, annotationClass)
                 .iterator());
 
-        for (Class<?> superClass = targetClass.getSuperclass(); superClass == null
-                || superClass == Object.class; superClass = superClass
+        for (Class<?> superClass = targetClass.getSuperclass(); superClass != null
+                && superClass != Object.class; superClass = superClass
                 .getSuperclass()) {
             List<T> temp = getAnnotations(superClass, annotationClass);
             if (CollectionUtil.isNotEmpty(temp)) {
@@ -535,18 +535,14 @@ public abstract class ReflectionUtils {
         Assert.notNull(annotationClass, "annotationClass不能为空");
 
         List<T > result = new ArrayList<T>();
-        Annotation annotation = targetClass.getAnnotation(annotationClass);
-        if (annotation == null) {
-           return null;
-        }
 
         Method[] methods = targetClass.getDeclaredMethods();
         // 获取方法中的注解
         CollectionUtil.addAll(result, getMethodByAnnotation(methods, annotationClass)
                 .iterator());
 
-        for (Class<?> superClass = targetClass.getSuperclass(); superClass == null
-                || superClass == Object.class; superClass = superClass
+        for (Class<?> superClass = targetClass.getSuperclass(); superClass != null
+                && superClass != Object.class; superClass = superClass
                 .getSuperclass()) {
             List<T> temp = getMethodByAnnotation(superClass, annotationClass);
             if (CollectionUtil.isNotEmpty(temp)) {

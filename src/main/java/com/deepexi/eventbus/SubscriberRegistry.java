@@ -14,6 +14,8 @@
 
 package com.deepexi.eventbus;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.deepexi.eventbus.util.ReflectionUtils;
 import com.sun.istack.internal.Nullable;
 import com.deepexi.eventbus.annotation.Subscribe;
 import com.deepexi.eventbus.base.Collections;
@@ -114,8 +116,12 @@ final class SubscriberRegistry {
             return subscribeMethods;
         }
         Map<MethodIdentifier, SubscribeMethod> identifiers = Collections.newHashMap();
-        for (Method method : listenerClazz.getMethods()) {
-            if (!method.isAnnotationPresent(Subscribe.class) || method.isSynthetic()) {
+        List<Method> methods = ReflectionUtils.getMethodByAnnotation(listenerClazz, Subscribe.class);
+        if (CollectionUtil.isEmpty(methods)) {
+            return null;
+        }
+        for (Method method : methods) {
+            if (method.isSynthetic()) {
                 continue;
             }
             // check the count of parameters
