@@ -99,10 +99,16 @@ public class EventBus {
 
     private final SubscriberRegistry subscribers = new SubscriberRegistry(this);
     private final Dispatcher dispatcher;
+    private static final String DEFAULT_IDENTIFIER = "deepexi-eventbus";
 
-    /** Creates a new EventBus named "default". */
+    /** Creates a new EventBus named DEFAULT_IDENTIFIER. */
     public EventBus() {
-        this("default");
+        this(DEFAULT_IDENTIFIER, true);
+    }
+
+    /** Creates a new EventBus name. */
+    public EventBus(String identifier) {
+        this(identifier, true);
     }
 
     /**
@@ -111,10 +117,10 @@ public class EventBus {
      * @param identifier a brief name for this bus, for logging purposes. Should be a valid Java
      *     identifier.
      */
-    public EventBus(String identifier) {
+    public EventBus(String identifier, boolean newThreadExecutor) {
         this(
                 identifier,
-                MoreExecutors.directExecutor(),
+                newThreadExecutor ? MoreExecutors.oneThreadExecutor(identifier) : MoreExecutors.directExecutor(),
                 Dispatcher.perThreadDispatchQueue(),
                 LoggingHandler.INSTANCE);
     }
@@ -125,10 +131,10 @@ public class EventBus {
      * @param exceptionHandler Handler for subscriber exceptions.
      * @since 16.0
      */
-    public EventBus(SubscriberExceptionHandler exceptionHandler) {
+    public EventBus(SubscriberExceptionHandler exceptionHandler, boolean newThreadExecutor) {
         this(
-                "default",
-                MoreExecutors.directExecutor(),
+                DEFAULT_IDENTIFIER,
+                newThreadExecutor ? MoreExecutors.oneThreadExecutor(DEFAULT_IDENTIFIER) : MoreExecutors.directExecutor(),
                 Dispatcher.perThreadDispatchQueue(),
                 exceptionHandler);
     }

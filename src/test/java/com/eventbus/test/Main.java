@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Main {
     public static void main(String[] args) {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 2, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1));
+//        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 2, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1));
         EventBus eventBus = new EventBus();
         Runner runner = new Runner();
 //        eventBus.register(runner);
