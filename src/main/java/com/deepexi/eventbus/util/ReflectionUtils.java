@@ -36,7 +36,7 @@ public class ReflectionUtils {
 
         Method[] methods = targetClass.getDeclaredMethods();
         // 获取方法中的注解
-        CollectionUtil.addAll(result, getMethodByAnnotation(methods, annotationClass));
+        CollectionUtil.addAll(result,getMethodByAnnotation(methods, annotationClass));
 
         for (Class<?> superClass = targetClass.getSuperclass(); superClass != null
                 && superClass != Object.class; superClass = superClass
