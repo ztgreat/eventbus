@@ -516,6 +516,48 @@ public abstract class ReflectionUtils {
         return result;
     }
 
+
+
+    /**
+     *
+     * 获取对象中的所有annotationClass注解的 方法（包含父类方法）
+     *
+     * @param targetClass
+     *            目标对象Class
+     * @param annotationClass
+     *            注解类型Class
+     *
+     * @return List
+     */
+    public static <T extends Method> List<T> getMethodByAnnotation(
+            Class targetClass, Class annotationClass) {
+        Assert.notNull(targetClass, "targetClass不能为空");
+        Assert.notNull(annotationClass, "annotationClass不能为空");
+
+        List<T > result = new ArrayList<T>();
+        Annotation annotation = targetClass.getAnnotation(annotationClass);
+        if (annotation == null) {
+           return null;
+        }
+
+        Method[] methods = targetClass.getDeclaredMethods();
+        // 获取方法中的注解
+        CollectionUtil.addAll(result, getMethodByAnnotation(methods, annotationClass)
+                .iterator());
+
+        for (Class<?> superClass = targetClass.getSuperclass(); superClass == null
+                || superClass == Object.class; superClass = superClass
+                .getSuperclass()) {
+            List<T> temp = getMethodByAnnotation(superClass, annotationClass);
+            if (CollectionUtil.isNotEmpty(temp)) {
+                CollectionUtil.addAll(result, temp.iterator());
+            }
+        }
+
+        return result;
+    }
+
+
     /**
      * 获取field的annotationClass注解
      *
@@ -616,6 +658,37 @@ public abstract class ReflectionUtils {
             Annotation annotation = getAnnotation(method, annotationClass);
             if (annotation != null) {
                 result.add((T) annotation);
+            }
+        }
+
+        return result;
+    }
+
+
+    /**
+     * 获取method数组中匹配的annotationClass注解
+     *
+     * @param methods
+     *            method对象数组
+     * @param annotationClass
+     *            annotationClass注解
+     *
+     * @return List
+     */
+    public static <T extends Method> List<T> getMethodByAnnotation(
+            Method[] methods, Class annotationClass) {
+
+        if (ArrayUtil.isEmpty(methods)) {
+            return null;
+        }
+
+        List<T> result = new ArrayList<T>();
+
+        for (Method method : methods) {
+
+            Annotation annotation = getAnnotation(method, annotationClass);
+            if (annotation != null) {
+                result.add((T) method);
             }
         }
 
