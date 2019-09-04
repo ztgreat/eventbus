@@ -1,4 +1,4 @@
-package com.ztgreat.eventbus.base;
+package com.deepexi.eventbus.base;
 
 /**
  * <p> the common check for other method </p>

@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.ztgreat.eventbus;
+package com.deepexi.eventbus;
 
 import java.util.concurrent.Executor;
 

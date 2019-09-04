@@ -1,12 +1,9 @@
 package com.eventbus.test;
 
-import com.ztgreat.eventbus.AsyncEventBus;
-import com.ztgreat.eventbus.EventBus;
-import com.ztgreat.eventbus.annotation.Subscribe;
-import com.ztgreat.eventbus.constant.Priority;
+import com.deepexi.eventbus.annotation.Subscribe;
+import com.deepexi.eventbus.constant.Priority;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -17,13 +14,34 @@ import java.util.concurrent.TimeUnit;
  * @date 2019/8/29
  */
 public class Main {
-    public static void main(String[] args) {
-        Executor executor = new ThreadPoolExecutor(1, 10, 10L, TimeUnit.SECONDS, new SynchronousQueue());
-        EventBus eventBus = new AsyncEventBus(executor);
-        Runner runner = new Runner();
-        eventBus.register(runner);
-        eventBus.register(new CountinueRunner());
-        eventBus.post("Hello World");
+    public static void main(String[] args) throws InterruptedException {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 2, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(1));
+
+        for (int i = 0; i < 100; i++) {
+            executor.execute(() ->{
+                try {
+                    Thread.sleep(1000000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("1000");
+            }
+                );
+            System.out.println("123");
+        }
+
+
+//        EventBus eventBus = new AsyncEventBus(executor);
+//        Runner runner = new Runner();
+//        eventBus.register(runner);
+//        eventBus.register(new CountinueRunner());
+//        eventBus.post("Hello World");
+//        executor.execute(() -> {
+//            LockSupport.park();
+//            System.out.println("I'm ran");
+//        });
+//        Thread.sleep(2000);
+//        executor.shutdownNow();
     }
 }
 

@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.ztgreat.eventbus;
+package com.deepexi.eventbus;
 
 /**
  * Handler for exceptions thrown by event subscribers.

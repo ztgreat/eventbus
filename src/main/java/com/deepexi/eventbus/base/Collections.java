@@ -1,4 +1,4 @@
-package com.ztgreat.eventbus.base;
+package com.deepexi.eventbus.base;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

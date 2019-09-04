@@ -1,8 +1,8 @@
-package com.ztgreat.eventbus.constant;
+package com.deepexi.eventbus.constant;
 
 /**
- * <p> the priority in method register in {@link com.ztgreat.eventbus.EventBus}
- * , this class is used into the field priority in {@link com.ztgreat.eventbus.Subscriber} </p>
+ * <p> the priority in method register in {@link com.deepexi.eventbus.EventBus}
+ * , this class is used into the field priority in {@link com.deepexi.eventbus.Subscriber} </p>
  *
  * @author chenglu
  * @date 2019/8/30

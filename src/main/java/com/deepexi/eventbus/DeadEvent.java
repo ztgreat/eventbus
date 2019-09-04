@@ -12,10 +12,10 @@
  * the License.
  */
 
-package com.ztgreat.eventbus;
+package com.deepexi.eventbus;
 
 
-import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
+import static com.deepexi.eventbus.base.Preconditions.checkNotNull;
 
 
 /**

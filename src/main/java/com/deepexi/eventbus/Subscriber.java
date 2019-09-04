@@ -12,16 +12,16 @@
  * the License.
  */
 
-package com.ztgreat.eventbus;
+package com.deepexi.eventbus;
 
+import com.deepexi.eventbus.annotation.AllowConcurrentEvents;
 import com.sun.istack.internal.Nullable;
-import com.ztgreat.eventbus.annotation.AllowConcurrentEvents;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
 
-import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
+import static com.deepexi.eventbus.base.Preconditions.checkNotNull;
 
 /**
  * A subscriber method on a specific object, plus the executor that should be used for dispatching
@@ -115,7 +115,7 @@ class Subscriber {
 
     /**
      * Checks whether {@code method} is thread-safe, as indicated by the presence of the {@link
-     * com.ztgreat.eventbus.annotation.AllowConcurrentEvents} annotation.
+     * com.deepexi.eventbus.annotation.AllowConcurrentEvents} annotation.
      */
     private static boolean isDeclaredThreadSafe(Method method) {
         return method.getAnnotation(AllowConcurrentEvents.class) != null;

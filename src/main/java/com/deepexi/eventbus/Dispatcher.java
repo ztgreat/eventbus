@@ -12,16 +12,15 @@
  * the License.
  */
 
-package com.ztgreat.eventbus;
+package com.deepexi.eventbus;
 
-import com.ztgreat.eventbus.base.Collections;
+import com.deepexi.eventbus.base.Collections;
+import com.deepexi.eventbus.base.Preconditions;
 
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
-
-import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
 
 
 /**
@@ -87,8 +86,8 @@ abstract class Dispatcher {
 
     @Override
     void dispatch(Object event, Iterator<Subscriber> subscribers) {
-      checkNotNull(event);
-      checkNotNull(subscribers);
+      Preconditions.checkNotNull(event);
+      Preconditions.checkNotNull(subscribers);
       Queue<Event> queueForThread = queue.get();
       queueForThread.offer(new Event(event, subscribers));
 
@@ -146,7 +145,7 @@ abstract class Dispatcher {
 
     @Override
     void dispatch(Object event, Iterator<Subscriber> subscribers) {
-      checkNotNull(event);
+      Preconditions.checkNotNull(event);
       while (subscribers.hasNext()) {
         queue.add(new EventWithSubscriber(event, subscribers.next()));
       }
@@ -173,7 +172,7 @@ abstract class Dispatcher {
     private static final ImmediateDispatcher INSTANCE = new ImmediateDispatcher();
     @Override
     void dispatch(Object event, Iterator<Subscriber> subscribers) {
-      checkNotNull(event);
+      Preconditions.checkNotNull(event);
       while (subscribers.hasNext()) {
         subscribers.next().dispatchEvent(event);
       }
