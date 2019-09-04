@@ -20,6 +20,7 @@ import com.sun.istack.internal.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
+import java.util.logging.Logger;
 
 import static com.deepexi.eventbus.base.Preconditions.checkNotNull;
 
@@ -33,6 +34,7 @@ import static com.deepexi.eventbus.base.Preconditions.checkNotNull;
  * @author Colin Decker
  */
 class Subscriber {
+    private static final Logger LOGGER = Logger.getLogger(Subscriber.class.getName());
 
     /** Creates a {@code Subscriber} for {@code method} on event {@code class} of the {@code listener}. */
     static Subscriber create(EventBus bus, Object listener, SubscribeMethod subscribeMethod) {
@@ -64,6 +66,7 @@ class Subscriber {
     /** Dispatches {@code event} to this subscriber using the proper executor. */
     final void dispatchEvent(final Object event) {
         executor.execute(() -> {
+            LOGGER.info("[EventBus-" + subscribeMethod.getName() +"] model starts invoke.");
             try {
                 invokeSubscriberMethod(event);
             } catch (InvocationTargetException e) {

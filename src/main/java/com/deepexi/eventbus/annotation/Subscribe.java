@@ -39,4 +39,7 @@ import java.lang.annotation.Target;
 public @interface Subscribe {
     /** the priority in the subscriber method, only used into sync EventBus post **/
     int priority() default Priority.M_LEVEL;
+
+    /** the description name for the subscriber method **/
+    String name() default "";
 }

@@ -16,6 +16,8 @@ public class SubscribeMethod implements Serializable {
     private int priority;
     /** the subscribe event type **/
     private Class eventType;
+    /** the method's business name defined by user **/
+    private String name;
 
     public Method getMethod() {
         return method;
@@ -33,6 +35,14 @@ public class SubscribeMethod implements Serializable {
         this.priority = priority;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Class getEventType() {
         return eventType;
     }
@@ -47,6 +57,7 @@ public class SubscribeMethod implements Serializable {
                 "method=" + method +
                 ", priority=" + priority +
                 ", eventType=" + eventType +
+                ", name='" + name + '\'' +
                 '}';
     }
 
@@ -54,6 +65,7 @@ public class SubscribeMethod implements Serializable {
         private Method method;
         private int priority;
         private Class eventType;
+        private String name;
 
         private Builder() {
         }
@@ -77,11 +89,17 @@ public class SubscribeMethod implements Serializable {
             return this;
         }
 
+        public Builder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
         public SubscribeMethod build() {
             SubscribeMethod subscribeMethod = new SubscribeMethod();
             subscribeMethod.setMethod(method);
             subscribeMethod.setPriority(priority);
             subscribeMethod.setEventType(eventType);
+            subscribeMethod.setName(name);
             return subscribeMethod;
         }
     }

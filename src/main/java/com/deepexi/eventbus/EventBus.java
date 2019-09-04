@@ -115,7 +115,7 @@ public class EventBus {
         this(
                 identifier,
                 MoreExecutors.directExecutor(),
-                Dispatcher.immediate(),
+                Dispatcher.perThreadDispatchQueue(),
                 LoggingHandler.INSTANCE);
     }
 
@@ -240,6 +240,8 @@ public class EventBus {
 
             SubscribeMethod method = context.getSubscribeMethod();
             return "Exception thrown by subscriber business method "
+                    + "[" + method.getName()
+                    + "]"
                     + '('
                     + method.getMethod().getParameterTypes()[0].getName()
                     + ')'

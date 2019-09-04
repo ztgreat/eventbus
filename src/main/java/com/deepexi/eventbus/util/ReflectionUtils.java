@@ -29,8 +29,8 @@ public class ReflectionUtils {
      */
     public static <T extends Method> List<T> getMethodByAnnotation(
             Class targetClass, Class annotationClass) {
-        Assert.notNull(targetClass, "targetClass不能为空");
-        Assert.notNull(annotationClass, "annotationClass不能为空");
+        Assert.notNull(targetClass, "targetClass can not be null");
+        Assert.notNull(annotationClass, "annotationClass can not be null");
 
         List<T > result = new ArrayList<>();
 
@@ -64,8 +64,8 @@ public class ReflectionUtils {
     public static <T extends Annotation> T getAnnotation(Method method,
                                                          Class annotationClass) {
 
-        Assert.notNull(method, "method不能为空");
-        Assert.notNull(annotationClass, "annotationClass不能为空");
+        Assert.notNull(method, "method can not be null");
+        Assert.notNull(annotationClass, "annotationClass can not be null");
 
         method.setAccessible(true);
         if (method.isAnnotationPresent(annotationClass)) {

@@ -35,7 +35,7 @@ class Runner {
 }
 
 class CountinueRunner {
-    @Subscribe(priority = Priority.L_LEVEL)
+    @Subscribe(priority = Priority.L_LEVEL, name = "员工模块")
     public void run(String s) {
         System.out.println("[" + Priority.L_LEVEL + "]"  + "CountinueRunner Running");
     }
