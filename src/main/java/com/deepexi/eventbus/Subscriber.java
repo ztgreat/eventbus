@@ -66,7 +66,7 @@ class Subscriber {
     /** Dispatches {@code event} to this subscriber using the proper executor. */
     final void dispatchEvent(final Object event) {
         executor.execute(() -> {
-            LOGGER.info("[EventBus-" + subscribeMethod.getName() +"] model starts invoke.");
+            LOGGER.info("[EventBus-" + subscribeMethod.getName() +"] module starts invoke.");
             try {
                 invokeSubscriberMethod(event);
             } catch (InvocationTargetException e) {
