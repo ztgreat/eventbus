@@ -12,9 +12,9 @@
  * the License.
  */
 
-package com.ztgreat.eventbus.annotation;
+package com.deepexi.eventbus.annotation;
 
-import com.ztgreat.eventbus.constant.Priority;
+import com.deepexi.eventbus.constant.Priority;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -26,9 +26,9 @@ import java.lang.annotation.Target;
  *
  * <p>The type of event will be indicated by the method's first (and only) parameter. If this
  * annotation is applied to methods with zero parameters, or more than one parameter, the object
- * containing the method will not be able to register for event delivery from the {@link com.ztgreat.eventbus.EventBus}.
+ * containing the method will not be able to register for event delivery from the {@link com.deepexi.eventbus.EventBus}.
  *
- * <p>Unless also annotated with @{@link com.ztgreat.eventbus.annotation.AllowConcurrentEvents}, event subscriber methods will be
+ * <p>Unless also annotated with @{@link AllowConcurrentEvents}, event subscriber methods will be
  * invoked serially by each event bus that they are registered with.
  *
  * @author Cliff Biffle

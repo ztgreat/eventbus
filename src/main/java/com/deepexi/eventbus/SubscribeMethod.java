@@ -1,10 +1,10 @@
-package com.ztgreat.eventbus;
+package com.deepexi.eventbus;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
 /**
- * <p> the total information about the method with annotation {@link com.ztgreat.eventbus.annotation.Subscribe} </p>
+ * <p> the total information about the method with annotation {@link com.deepexi.eventbus.annotation.Subscribe} </p>
  *
  * @author chenglu
  * @date 2019/8/30

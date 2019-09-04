@@ -12,11 +12,11 @@
  * the License.
  */
 
-package com.ztgreat.eventbus;
+package com.deepexi.eventbus;
 
 import com.sun.istack.internal.Nullable;
-import com.ztgreat.eventbus.annotation.Subscribe;
-import com.ztgreat.eventbus.base.Collections;
+import com.deepexi.eventbus.annotation.Subscribe;
+import com.deepexi.eventbus.base.Collections;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
-import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
+import static com.deepexi.eventbus.base.Preconditions.checkNotNull;
 
 
 /**

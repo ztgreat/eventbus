@@ -12,18 +12,16 @@
  * the License.
  */
 
-package com.ztgreat.eventbus;
+package com.deepexi.eventbus;
 
-import com.ztgreat.eventbus.base.MoreExecutors;
+import com.deepexi.eventbus.base.MoreExecutors;
+import com.deepexi.eventbus.base.Preconditions;
 
-import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
 
 /**
  * Dispatches events to listeners, and provides ways for listeners to register themselves.
@@ -41,7 +39,7 @@ import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
  * <ol>
  *   <li>Expose a public method, known as the <i>event subscriber</i>, which accepts a single
  *       argument of the type of event desired;
- *   <li>Mark it with a {@link com.ztgreat.eventbus.annotation.Subscribe} annotation;
+ *   <li>Mark it with a {@link com.deepexi.eventbus.annotation.Subscribe} annotation;
  *   <li>Pass itself to an EventBus instance's {@link #register(Object)} method.
  * </ol>
  *
@@ -69,7 +67,7 @@ import static com.ztgreat.eventbus.base.Preconditions.checkNotNull;
  *
  * <p>The EventBus guarantees that it will not call a subscriber method from multiple threads
  * simultaneously, unless the method explicitly allows it by bearing the {@link
- * com.ztgreat.eventbus.annotation.AllowConcurrentEvents} annotation. If this annotation is not present, subscriber methods need not
+ * com.deepexi.eventbus.annotation.AllowConcurrentEvents} annotation. If this annotation is not present, subscriber methods need not
  * worry about being reentrant, unless also called from outside the EventBus.
  *
  * <h2>Dead Events</h2>
@@ -140,10 +138,10 @@ public class EventBus {
             Executor executor,
             Dispatcher dispatcher,
             SubscriberExceptionHandler exceptionHandler) {
-        this.identifier = checkNotNull(identifier);
-        this.executor = checkNotNull(executor);
-        this.dispatcher = checkNotNull(dispatcher);
-        this.exceptionHandler = checkNotNull(exceptionHandler);
+        this.identifier = Preconditions.checkNotNull(identifier);
+        this.executor = Preconditions.checkNotNull(executor);
+        this.dispatcher = Preconditions.checkNotNull(dispatcher);
+        this.exceptionHandler = Preconditions.checkNotNull(exceptionHandler);
     }
 
     /**
@@ -162,8 +160,8 @@ public class EventBus {
 
     /** Handles the given exception thrown by a subscriber with the given context. */
     void handleSubscriberException(Throwable e, SubscriberExceptionContext context) {
-        checkNotNull(e);
-        checkNotNull(context);
+        Preconditions.checkNotNull(e);
+        Preconditions.checkNotNull(context);
         try {
             exceptionHandler.handleException(e, context);
         } catch (Throwable e2) {
