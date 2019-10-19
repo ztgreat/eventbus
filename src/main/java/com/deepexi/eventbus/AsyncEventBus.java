@@ -37,6 +37,11 @@ public class AsyncEventBus extends EventBus {
     super(identifier, executor, Dispatcher.legacyAsync(), LoggingHandler.INSTANCE);
   }
 
+  
+  public AsyncEventBus(String identifier, Executor executor,SubscriberExceptionHandler subscriberExceptionHandler) {
+    super(identifier, executor, Dispatcher.legacyAsync(), subscriberExceptionHandler);
+  }
+
   /**
    * Creates a new AsyncEventBus that will use {@code executor} to dispatch events.
    *
